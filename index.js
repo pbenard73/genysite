@@ -2,7 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const nunjucks = require('nunjucks')
 
-const HOME_PAGE = "/geny"
+const HOME_PAGE = "/genysite"
 
 const ROOT = path.resolve(".")
 const SRC_FOLDER = path.resolve(ROOT, 'src')
