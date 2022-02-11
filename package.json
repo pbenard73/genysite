@@ -17,6 +17,6 @@
     "nunjucks": "^3.2.3"
   },
   "bin": {
-    "geny": "./index.js"
+    "genysite": "./index.js"
   }
 }
