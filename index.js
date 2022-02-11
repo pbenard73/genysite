@@ -10,7 +10,7 @@ const PAGES_FOLDER = path.resolve(SRC_FOLDER, 'pages')
 const ASSETS_FOLDER = path.resolve(SRC_FOLDER, 'assets')
 const TEMPLATE_FOLDER = path.resolve(SRC_FOLDER, 'template')
 const TEMPLATE_ASSETS_FOLDER = path.resolve(TEMPLATE_FOLDER, 'assets') 
-const DIST_FOLDER = path.resolve(ROOT, 'dist')
+const DIST_FOLDER = path.resolve(ROOT, 'docs')
 
 const env = new nunjucks.Environment(new nunjucks.FileSystemLoader(SRC_FOLDER));
 
