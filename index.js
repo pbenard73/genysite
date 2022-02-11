@@ -4,26 +4,34 @@ const fs = require('fs')
 const path = require('path')
 const nunjucks = require('nunjucks')
 
-const HOME_PAGE = "/genysite"
-
 const ROOT = path.resolve(".")
+const CONFIG_PATH = path.join(ROOT, 'genysite.json')
+
+let config = {}
+
+if (fs.existsSync(CONFIG_PATH) === true) {
+  config = require(CONFIG_PATH)
+}
+
+const HOMEPAGE = config.homepage || '';
+const DIST_FOLDER = path.resolve(ROOT, config.dist || 'docs')
+
 const SRC_FOLDER = path.resolve(ROOT, 'src')
 const PAGES_FOLDER = path.resolve(SRC_FOLDER, 'pages')
 const ASSETS_FOLDER = path.resolve(SRC_FOLDER, 'assets')
 const TEMPLATE_FOLDER = path.resolve(SRC_FOLDER, 'template')
 const TEMPLATE_ASSETS_FOLDER = path.resolve(TEMPLATE_FOLDER, 'assets') 
-const DIST_FOLDER = path.resolve(ROOT, 'docs')
 
 const env = new nunjucks.Environment(new nunjucks.FileSystemLoader(SRC_FOLDER));
 
 env.addFilter('assets', function(assetPath, template = false) {
-  const rootAssetPath = path.join(HOME_PAGE || '', 'assets')
+  const rootAssetPath = path.join(HOMEPAGE || '', 'assets')
 
   return template === false ? path.join(rootAssetPath, assetPath) : path.join(rootAssetPath, 'template', assetPath)
 })
 
 env.addFilter('link', function(linkPath) {
-  return path.join(HOME_PAGE || '', linkPath)
+  return path.join(HOMEPAGE || '', linkPath)
 })
 
 let hasAssets = true

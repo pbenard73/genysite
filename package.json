@@ -14,6 +14,7 @@
   "author": "BENARD Patrick <p.benard73@gmail.com>",
   "license": "ISC",
   "dependencies": {
+    "genysite": "^0.0.1",
     "nunjucks": "^3.2.3"
   },
   "bin": {
