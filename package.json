@@ -1,0 +1,22 @@
+{
+  "name": "geny",
+  "version": "0.0.1",
+  "description": "Simple Site Generator",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "simple",
+    "site",
+    "generator"
+  ],
+  "author": "BENARD Patrick <p.benard73@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "nunjucks": "^3.2.3"
+  },
+  "bin": {
+    "geny": "./index.js"
+  }
+}
