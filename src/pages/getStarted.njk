@@ -27,7 +27,7 @@
 <h3>Template Filter</h3>
 
 <ul>
-  <li><b>link</b> <code>{{ "contact.html"|link }}</code> will generate the path to the contact page <code>src/pages/contact.njk</code> </li>
+  <li><b>link</b> <code>{% verbatim %}{{ "contact.html"|link }}{% endverbatim %}</code> will generate the path to the contact page <code>src/pages/contact.njk</code> </li>
 <li><b>assets(isTemplateAssets = false)</b> <code><link rel="stylesheet" href="{{ 'milligram.css'|assets(true) }}"
 </code></li>
 </ul>
