@@ -2,6 +2,7 @@
 
 const fs = require('fs')
 const path = require('path')
+const nodeUrl = require('url')
 const nunjucks = require('nunjucks')
 
 const ROOT = path.resolve(".")
@@ -25,13 +26,19 @@ const TEMPLATE_ASSETS_FOLDER = path.resolve(TEMPLATE_FOLDER, 'assets')
 const env = new nunjucks.Environment(new nunjucks.FileSystemLoader(SRC_FOLDER));
 
 env.addFilter('assets', function(assetPath, template = false) {
+  const url = new nodeUrl.URL(HOMEPAGE)
   const rootAssetPath = path.join(HOMEPAGE || '', 'assets')
 
-  return template === false ? path.join(rootAssetPath, assetPath) : path.join(rootAssetPath, 'template', assetPath)
+  url.pathname = template === false ? path.join('assets', assetPath) : path.join('assets', 'template', assetPath)
+
+  return url.toString()
 })
 
 env.addFilter('link', function(linkPath) {
-  return path.join(HOMEPAGE || '', linkPath)
+  const url = new nodeUrl.URL(HOMEPAGE)
+  url.pathname = linkPath;
+
+  return url.toString()
 })
 
 let hasAssets = true
