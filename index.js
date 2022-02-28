@@ -28,7 +28,7 @@ const env = new nunjucks.Environment(new nunjucks.FileSystemLoader(SRC_FOLDER));
 let homepageIsUrl = false;
 
 try {
-  const url = new nodeUrl('test', HOMEPAGE)
+  const url = new nodeUrl.URL('test', HOMEPAGE)
   homepageIsUrl = true
 } catch(e) {
   
