@@ -26,17 +26,17 @@ const TEMPLATE_ASSETS_FOLDER = path.resolve(TEMPLATE_FOLDER, 'assets')
 const env = new nunjucks.Environment(new nunjucks.FileSystemLoader(SRC_FOLDER));
 
 env.addFilter('assets', function(assetPath, template = false) {
-  const url = new nodeUrl.URL(HOMEPAGE)
   const rootAssetPath = path.join(HOMEPAGE || '', 'assets')
 
-  url.pathname = template === false ? path.join('assets', assetPath) : path.join('assets', 'template', assetPath)
+  const pathname = template === false ? path.join('assets', assetPath) : path.join('assets', 'template', assetPath)
+
+  const url = new nodeUrl.URL(pathname, HOMEPAGE)
 
   return url.toString()
 })
 
 env.addFilter('link', function(linkPath) {
-  const url = new nodeUrl.URL(HOMEPAGE)
-  url.pathname = linkPath;
+  const url = new nodeUrl.URL(linkPath, HOMEPAGE)
 
   return url.toString()
 })
