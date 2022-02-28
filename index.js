@@ -12,7 +12,7 @@ let config = {}
 if (fs.existsSync(CONFIG_PATH) === true) {
   config = require(CONFIG_PATH)
 }
-console.log(config)
+
 const HOMEPAGE = config.homepage || '';
 const DIST_FOLDER = path.resolve(ROOT, config.dist || 'docs')
 
