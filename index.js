@@ -25,20 +25,35 @@ const TEMPLATE_ASSETS_FOLDER = path.resolve(TEMPLATE_FOLDER, 'assets')
 
 const env = new nunjucks.Environment(new nunjucks.FileSystemLoader(SRC_FOLDER));
 
+let homepageIsUrl = false;
+
+try {
+  const url = new nodeUrl('test', HOMEPAGE)
+  homepageIsUrl = true
+} catch(e) {
+  
+}
+
+const joinUrl = stringToJoin => {
+  if (homepageIsUrl === true) {
+    const url = new nodeUrl.URL(stringToJoin, HOMEPAGE)
+
+    return url.toString()
+  }
+
+  return path.join(HOMEPAGE, stringToJoin)
+}
+
 env.addFilter('assets', function(assetPath, template = false) {
   const rootAssetPath = path.join(HOMEPAGE || '', 'assets')
 
   const pathname = template === false ? path.join('assets', assetPath) : path.join('assets', 'template', assetPath)
 
-  const url = new nodeUrl.URL(pathname, HOMEPAGE)
-
-  return url.toString()
+  return joinUrl(pathname)
 })
 
 env.addFilter('link', function(linkPath) {
-  const url = new nodeUrl.URL(linkPath, HOMEPAGE)
-
-  return url.toString()
+  return joinUrl(linkPath)
 })
 
 let hasAssets = true
@@ -64,6 +79,7 @@ if (fs.existsSync(ASSETS_FOLDER) === false){
 if (fs.existsSync(TEMPLATE_FOLDER) === false){
   console.info("No template was found")
   hasTemplateFolder=false
+  hasTemplateAssets=false
 }
 
 if (hasTemplateFolder === true && fs.existsSync(TEMPLATE_ASSETS_FOLDER) === false){
@@ -123,7 +139,7 @@ dirPool.forEach(entry => {
 if (hasAssets === true) {
   fs.cpSync(ASSETS_FOLDER, path.join(DIST_FOLDER, 'assets'), {recursive: true})
 } else if (hasTemplateAssets === true) {
-  fs.mkddirSync(path.join(DIST_FOLDER, 'assets'));
+  fs.mkdirSync(path.join(DIST_FOLDER, 'assets'));
 }
 
 if (hasTemplateAssets === true) {
