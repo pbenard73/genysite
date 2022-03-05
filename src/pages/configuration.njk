@@ -1,0 +1,30 @@
+{% extends 'template/layout.njk' %}
+
+{% block content %}
+
+  {% markdown %}
+
+  ## Configuration File
+
+  The configuration must be at the root project `genysite.config.js`
+  
+
+  {% highlight "js" %}
+    {
+      homepage: '',
+      data: {},
+      index:'',
+      priority: [],
+      names: {}
+    }
+    {% endhighlight %}
+
+
+  * **homepage** *String* The default prefix for all the routes
+  * **data** *Object* The extra data given to the template engine 
+  * **index** *String* The page served as index
+  * **priority** *String[]* The priority of page to create the page tree
+  * **names** *Object* The pages labels
+
+  {% endmarkdown %}
+{% endblock %}

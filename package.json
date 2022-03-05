@@ -16,7 +16,10 @@
   "dependencies": {
     "commander": "^9.0.0",
     "genysite": "^0.0.1",
-    "nunjucks": "^3.2.3"
+    "highlight.js": "^11.4.0",
+    "marked": "^4.0.12",
+    "nunjucks": "^3.2.3",
+    "sass": "^1.49.9"
   },
   "bin": {
     "genysite": "./index.js"
