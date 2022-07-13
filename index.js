@@ -220,6 +220,10 @@ const compile = async () => {
      *  Compile Sass file
      */
     const performSass = (rootDir) => {
+      if (fs.existsSync(rootDir) === false) {
+        return;
+      }
+
       const files = fs.readdirSync(rootDir, {withFileTypes: true})
 
       files.forEach(fileInfo => {

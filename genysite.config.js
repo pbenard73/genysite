@@ -1,7 +1,8 @@
 const packageJson = require('./package.json')
 
 module.exports = {
-  homepage: "https://pbenard73.github.io/genysite/",
+ // homepage: "https://pbenard73.github.io/genysite/",
+  homepage: "file:///home/patrick/Workspace/geny/docs/",
   data: {
     version: packageJson.version,
     title:'Genysite',

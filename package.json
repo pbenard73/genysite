@@ -1,6 +1,6 @@
 {
   "name": "genysite",
-  "version": "0.0.10",
+  "version": "0.0.12",
   "description": "Simple Static Site Generator",
   "main": "index.js",
   "scripts": {

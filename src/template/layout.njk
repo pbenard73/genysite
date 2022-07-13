@@ -1,21 +1,18 @@
-{% extends './base-layout.njk' %}
+<html>
+<head>
+<link rel="stylesheet" href="{{ 'milligram.css'|assets(true) }}" />
+</head>
 
-{% block basecontent %}
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-sm-5 col-lg-4">
-        <h1><a href="{{''|link}}">{{ title }}</a></h1>
-        <p><i>{{ subtitle }}</i></p>
-        <p><small>{{ version }}</small></p>
-        <div class="sidebar_menu">
-          {{ makeTree(tree) }}
-        </div>
-      </div>
-      <div class="col-sm-7 col-lg-8">
-        {% block content %}
-        {% endblock %}
-      </div>
-    </div>
-  </div>
+<body>
+<div class="container">
+<h1><a href="{{''|link}}">Geny Plate</a></h1>
+<p><i>Simple Test Site Generator</i></p>
+<p><small>without version</small></p>
+
+<div style="margin-top:50px">
+{% block content %}
 
 {% endblock %}
+</div>
+</body>
+</html>
