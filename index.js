@@ -5,7 +5,9 @@ const sass = require('sass')
 const {spawn} = require('child_process')
 const path = require('path')
 const { Command, Argument } = require('commander')
+const merge = require('merge-deep');
 const createTemplateEngine = require('./libs/templateEngine')
+const reactTemplateEngine = require('./libs/reactEngine/index')
 
 const TEMPLATES_DIR = path.resolve(__dirname, 'templates')
 const TEMPLATES = fs.readdirSync(TEMPLATES_DIR)
@@ -53,15 +55,23 @@ const compile = async () => {
   const DIST_FOLDER = path.resolve(ROOT, config.dist || 'docs')
 
   const SRC_FOLDER = path.resolve(ROOT, 'src')
+  const TMP_FOLDER = path.resolve(ROOT, 'tmp')
   const PAGES_FOLDER = path.resolve(SRC_FOLDER, 'pages')
   const ASSETS_FOLDER = path.resolve(SRC_FOLDER, 'assets')
   const TEMPLATE_FOLDER = path.resolve(SRC_FOLDER, 'template')
   const TEMPLATE_ASSETS_FOLDER = path.resolve(TEMPLATE_FOLDER, 'assets') 
+  const TEMPLATE_CONFIG_FILE = path.resolve(TEMPLATE_FOLDER, 'config.js') 
+
+  if (fs.existsSync(TEMPLATE_CONFIG_FILE) === true) {
+    const templateConfig = require(TEMPLATE_CONFIG_FILE)
+
+    config = merge(templateConfig, config)
+  }
 
   /**
    * Set nunjucks environment
    */
-    const env = createTemplateEngine(SRC_FOLDER, HOMEPAGE)
+    const env = createTemplateEngine(SRC_FOLDER, HOMEPAGE, config)
 
     /**
      *  Check FileSystem
@@ -262,30 +272,61 @@ const compile = async () => {
     /**
      * Generate Pages
      */
-    const promises = pagesPool.map(pageData => new Promise((resolve, reject) => {
-      const templatePath = path.join('pages/', pageData.rootPath)
-      env.render(templatePath, templateData, (error, result) => {
-        if (error) {
-          return reject(error)
-        }
+    if (config.react !== true) {
+      const promises = pagesPool.map(pageData => new Promise((resolve, reject) => {
+        const templatePath = path.join('pages/', pageData.rootPath)
+        env.render(templatePath, templateData, (error, result) => {
+          if (error) {
+            return reject(error)
+          }
+  
+          const target = path.join(DIST_FOLDER, pageData.rootPath)
+  
+          fs.writeFileSync(target.replace(FILE_EXTENSION, '.html'), result, 'utf8')
+  
+          resolve(true)
+        })
+      }))
+  
+      Promise.all(promises)
+        .then(results => {
+          console.log('Well done')
+          process.exit(0)
+        })
+        .catch(error => {
+          console.error(error)
+          process.exit(1)
+        })
+    } else {
+      const promises = pagesPool.map(pageData => new Promise((resolve, reject) => {
+        const templatePath = path.join('pages/', pageData.rootPath)
+        env.render(templatePath, templateData, (error, result) => {
+          if (error) {
+            return reject(error)
+          }
+          
+          resolve({...pageData, content: result, path: pageData.filePath.replace(PAGES_FOLDER, '').replace(FILE_EXTENSION, '')})
+        })
+      }))
 
-        const target = path.join(DIST_FOLDER, pageData.rootPath)
-
-        fs.writeFileSync(target.replace(FILE_EXTENSION, '.html'), result, 'utf8')
-
-        resolve(true)
-      })
-    }))
-
-    Promise.all(promises)
+      Promise.all(promises)
       .then(results => {
-        console.log('Well done')
-        process.exit(0)
+        reactTemplateEngine(results, templateData, config, {dist: DIST_FOLDER, tmp: TMP_FOLDER})
+        .then(() => {
+          console.log('Well done')
+          process.exit(0)
+        })
+        .catch(error => {
+          console.error(error)
+          process.exit(1)
+        })
       })
       .catch(error => {
         console.error(error)
         process.exit(1)
       })
+    }
+
   }
 
   const installTemplate = async (templateUrl) => {
