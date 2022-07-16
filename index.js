@@ -4,6 +4,7 @@ const fs = require('fs')
 const sass = require('sass')
 const {spawn} = require('child_process')
 const path = require('path')
+const marked = require('marked')
 const { Command, Argument } = require('commander')
 const merge = require('merge-deep');
 const createTemplateEngine = require('./libs/templateEngine')
@@ -127,7 +128,9 @@ const compile = async () => {
       const priority = Array.isArray(config.priority) === true ? config.priority : null
       const pages = fs.readdirSync(filePath, {withFileTypes: true})
 
-      return pages.filter(pageInfo => path.extname(pageInfo.name) === FILE_EXTENSION || pageInfo.isDirectory() === true).map(pageInfo => {
+      return pages
+     // .filter(pageInfo => path.extname(pageInfo.name) === FILE_EXTENSION || pageInfo.isDirectory() === true)
+      .map(pageInfo => {
         const newFilePath = path.join(filePath, pageInfo.name)
         const newRootPath = path.join(rootPath, pageInfo.name)
         const withoutExtension = path.join(rootPath, pageInfo.name.replace(FILE_EXTENSION, ''))
@@ -275,14 +278,21 @@ const compile = async () => {
     if (config.react !== true) {
       const promises = pagesPool.map(pageData => new Promise((resolve, reject) => {
         const templatePath = path.join('pages/', pageData.rootPath)
+
+        //marked.parse(body())
+
         env.render(templatePath, templateData, (error, result) => {
           if (error) {
             return reject(error)
           }
+
+          if (path.extname(templatePath) === '.md') {
+            result = marked.parse(result)
+          }
   
           const target = path.join(DIST_FOLDER, pageData.rootPath)
   
-          fs.writeFileSync(target.replace(FILE_EXTENSION, '.html'), result, 'utf8')
+          fs.writeFileSync(target.replace(path.extname(target), '.html'), result, 'utf8')
   
           resolve(true)
         })
@@ -304,8 +314,12 @@ const compile = async () => {
           if (error) {
             return reject(error)
           }
+
+          if (path.extname(templatePath) === '.md') {
+            result = marked.parse(result)
+          }
           
-          resolve({...pageData, content: result, path: pageData.filePath.replace(PAGES_FOLDER, '').replace(FILE_EXTENSION, '')})
+          resolve({...pageData, content: result, path: pageData.filePath.replace(PAGES_FOLDER, '').replace(path.extname(pageData.filePath), '')})
         })
       }))
 
