@@ -24,17 +24,17 @@ module.exports = (constants = {}, config = {}) => ({
         exclude: /node_modules/,
         loader: require.resolve("babel-loader"),
         options: {
-            presets: ["@babel/preset-react"],
-            plugins: ["@babel/plugin-syntax-jsx"]
+            presets: [require.resolve("@babel/preset-react")],
+            plugins: [require.resolve("@babel/plugin-syntax-jsx")]
         }
       },
       {
         test: /\.css$/,
-        use: ["style-loader", "css-loader"],
+        use: [require.resolve("style-loader"), require.resolve("css-loader")],
       },
       {
         test: /\.png|svg|jpg|gif$/,
-        use: ["file-loader"],
+        use: [require.resolve("file-loader")],
       }, 
     ],
   },

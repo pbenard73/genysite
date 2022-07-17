@@ -56,12 +56,16 @@ const compile = async () => {
   const DIST_FOLDER = path.resolve(ROOT, config.dist || 'docs')
 
   const SRC_FOLDER = path.resolve(ROOT, 'src')
-  const TMP_FOLDER = path.resolve(ROOT, 'tmp')
+  const TMP_FOLDER = path.resolve(__dirname, 'tmp')
   const PAGES_FOLDER = path.resolve(SRC_FOLDER, 'pages')
   const ASSETS_FOLDER = path.resolve(SRC_FOLDER, 'assets')
   const TEMPLATE_FOLDER = path.resolve(SRC_FOLDER, 'template')
   const TEMPLATE_ASSETS_FOLDER = path.resolve(TEMPLATE_FOLDER, 'assets') 
   const TEMPLATE_CONFIG_FILE = path.resolve(TEMPLATE_FOLDER, 'config.js') 
+
+  if (fs.existsSync(TMP_FOLDER) === false) {
+    fs.mkdirSync(TMP_FOLDER)
+  }
 
   if (fs.existsSync(TEMPLATE_CONFIG_FILE) === true) {
     const templateConfig = require(TEMPLATE_CONFIG_FILE)
@@ -278,8 +282,6 @@ const compile = async () => {
     if (config.react !== true) {
       const promises = pagesPool.map(pageData => new Promise((resolve, reject) => {
         const templatePath = path.join('pages/', pageData.rootPath)
-
-        //marked.parse(body())
 
         env.render(templatePath, templateData, (error, result) => {
           if (error) {
