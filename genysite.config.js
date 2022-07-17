@@ -15,6 +15,7 @@ module.exports = {
     getStarted: 'Get Started',
     configuration: 'Configuration File',
     "templating": 'Templating',
-    "templating/index": 'Builtin Engine'
+    "templating/htmlEngine": 'To HTML',
+    "templating/reactEngine": 'To React'
   }
 }

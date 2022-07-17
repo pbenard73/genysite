@@ -1,7 +1,7 @@
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
 
-module.exports = (constants = {}) => ({
+module.exports = (constants = {}, config = {}) => ({
   entry: path.resolve(__dirname, "./app_index.js"),
   output: {
     filename: "bundle.[fullhash].js",

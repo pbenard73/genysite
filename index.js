@@ -133,8 +133,8 @@ const compile = async () => {
       .map(pageInfo => {
         const newFilePath = path.join(filePath, pageInfo.name)
         const newRootPath = path.join(rootPath, pageInfo.name)
-        const withoutExtension = path.join(rootPath, pageInfo.name.replace(FILE_EXTENSION, ''))
-        const newFrontPath = path.join(rootPath, pageInfo.name.replace(FILE_EXTENSION, '.html'))
+        const withoutExtension = path.join(rootPath, pageInfo.name.replace(path.extname(pageInfo.name), ''))
+        const newFrontPath = path.join(rootPath, pageInfo.name.replace(path.extname(pageInfo.name), config.react === true ? '' : '.html'))
 
         if (pageInfo.isDirectory() === true) {
           const name = config.names?.[newRootPath] || pageInfo.name
@@ -144,10 +144,10 @@ const compile = async () => {
           return {name, brutName: pageInfo.name, children: performPages(newFilePath, newRootPath)}
         }
 
-        const name = config.names?.[newRootPath.replace(FILE_EXTENSION, '')] || pageInfo.name
+        const name = config.names?.[newRootPath.replace(path.extname(pageInfo.name), '')] || pageInfo.name
         pagesPool.push({filePath: newFilePath, rootPath: newRootPath})
 
-        return {name: name.replace(FILE_EXTENSION, ''), brutName: pageInfo.name.replace(FILE_EXTENSION, ''), path: config.index === withoutExtension ? '' : newFrontPath}
+        return {name: name.replace(path.extname(pageInfo.name), ''), brutName: pageInfo.name.replace(path.extname(pageInfo.name), ''), path: config.index === withoutExtension ? '' : newFrontPath}
       }).sort((a, b) => {
         /**
          * Order the tree,
@@ -325,14 +325,33 @@ const compile = async () => {
 
       Promise.all(promises)
       .then(results => {
-        reactTemplateEngine(results, templateData, config, {dist: DIST_FOLDER, tmp: TMP_FOLDER})
-        .then(() => {
-          console.log('Well done')
-          process.exit(0)
-        })
-        .catch(error => {
-          console.error(error)
-          process.exit(1)
+        const workDone = () => {
+          reactTemplateEngine(results, templateData, config, {dist: DIST_FOLDER, tmp: TMP_FOLDER})
+          .then(() => {
+            console.log('Well done')
+            process.exit(0)
+          })
+          .catch(error => {
+            console.error(error)
+            process.exit(1)
+          })
+        }
+
+        if (!config.index_html) {
+          fs.copyFileSync(path.resolve(__dirname, './libs/reactEngine/base_index.html'), path.resolve(TMP_FOLDER, './index.html'))
+          
+          return workDone()
+        }
+
+        env.render(config.index_html, templateData, (error, result) => {
+          if (error) {
+            console.error(error)
+            process.exit(1)
+          }
+
+          fs.writeFileSync(path.resolve(TMP_FOLDER, './index.html'), result)
+
+          return workDone()
         })
       })
       .catch(error => {
