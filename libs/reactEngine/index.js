@@ -42,7 +42,6 @@ const makeReact = (pagesData, templateData, config, constants) => new Promise(as
       fs.rmdirSync(constants.tmp, {recursive: true})
 
         if (err || stats.hasErrors()) {
-            console.log('HA ERROR', err, stats)
           return reject(err || stats.hasErrors())
         }
 

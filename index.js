@@ -378,6 +378,38 @@ const compile = async () => {
   }
 
   const installTemplate = async (templateUrl) => {
+    const checkPackageJson = () => {
+      const packageJsonPath = path.resolve(TEMPLATE_FOLDER, './package.json')
+
+      const makeEnd = () => {
+        console.log('Template installed')
+        process.exit(0)
+      }
+
+      if (fs.existsSync(packageJsonPath) === false) {
+        return makeEnd()
+      }
+
+      const npmInstall = spawn('npm', ['install', '--path', TEMPLATE_FOLDER])
+
+      npmInstall.stdout.on('data', (data) => {
+        console.log(`stdout: ${data}`);
+      });
+  
+      npmInstall.stderr.on('data', (data) => {
+        console.error(`stderr: ${data}`);
+      });
+  
+      npmInstall.on('close', errorCode => {
+        if (errorCode !== 0) {
+          console.error(`Error code ${errorCode}`)
+          return process.exit(1)
+        }
+  
+        process.exit(0)
+      })
+    }
+
     config = await getConfig()
 
     const SRC_FOLDER = path.resolve(ROOT, 'src')
@@ -390,8 +422,7 @@ const compile = async () => {
     if (TEMPLATES.indexOf(templateUrl) !== -1) {
       fs.cpSync(path.join(TEMPLATES_DIR, templateUrl), TEMPLATE_FOLDER, {recursive: true})
 
-      console.log('Template installed')
-      process.exit(0)
+      return checkPackageJson()
     }
 
     const clone = spawn('git', ['clone', templateUrl, TEMPLATE_FOLDER])
@@ -405,9 +436,12 @@ const compile = async () => {
     });
 
     clone.on('close', errorCode => {
-      console.log(errorCode)
+      if (errorCode !== 0) {
+        console.error(`Error code ${errorCode}`)
+        return process.exit(1)
+      }
 
-      process.exit(0)
+      return checkPackageJson()
     })
   }
 
