@@ -379,6 +379,7 @@ const compile = async () => {
 
   const installTemplate = async (templateUrl) => {
     const checkPackageJson = () => {
+      const tplPackageJsonPath = path.resolve(TEMPLATE_FOLDER, './tpl_package.json')
       const packageJsonPath = path.resolve(TEMPLATE_FOLDER, './package.json')
 
       const makeEnd = () => {
@@ -386,9 +387,11 @@ const compile = async () => {
         process.exit(0)
       }
 
-      if (fs.existsSync(packageJsonPath) === false) {
+      if (fs.existsSync(tplPackageJsonPath) === false) {
         return makeEnd()
       }
+
+      fs.copyFileSync(tplPackageJsonPath, packageJsonPath)
 
       const npmInstall = spawn('npm', ['install', '--path', TEMPLATE_FOLDER])
 
