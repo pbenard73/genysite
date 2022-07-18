@@ -6,7 +6,8 @@ module.exports = {
   data: {
     version: packageJson.version,
     title:'Genysite',
-    subtitle: 'Simply Static Site Generator'
+    subtitle: 'Simply Static Site Generator',
+    favicon: 'favicon.png'
   },
   priority:['index', 'getStarted', 'configuration'],
   index:'index',

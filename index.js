@@ -7,6 +7,7 @@ const path = require('path')
 const marked = require('marked')
 const { Command, Argument } = require('commander')
 const merge = require('merge-deep');
+const { v4: uuidv4 } = require('uuid');
 const createTemplateEngine = require('./libs/templateEngine')
 const reactTemplateEngine = require('./libs/reactEngine/index')
 
@@ -274,6 +275,7 @@ const compile = async () => {
 
     if (programConfig.verbose) {
       console.log('Template Variables: ', JSON.stringify(templateData, null, 4))
+      console.log('Engine: ', config.react !== true ? 'Default' : 'React')
     }
 
     /**
@@ -309,7 +311,14 @@ const compile = async () => {
           console.error(error)
           process.exit(1)
         })
-    } else {
+    } else {      
+      const tmpFolder = path.resolve(TMP_FOLDER, `./${uuidv4()}`)
+      fs.mkdirSync(tmpFolder);
+
+      if (programConfig.verbose) {
+        console.log('Temp folder created: ', tmpFolder)
+      }
+
       const promises = pagesPool.map(pageData => new Promise((resolve, reject) => {
         const templatePath = path.join('pages/', pageData.rootPath)
         env.render(templatePath, templateData, (error, result) => {
@@ -328,7 +337,7 @@ const compile = async () => {
       Promise.all(promises)
       .then(results => {
         const workDone = () => {
-          reactTemplateEngine(results, templateData, config, {dist: DIST_FOLDER, tmp: TMP_FOLDER})
+          reactTemplateEngine(results, templateData, config, {dist: DIST_FOLDER, tmp: tmpFolder, verbose: programConfig.verbose})
           .then(() => {
             console.log('Well done')
             process.exit(0)
@@ -340,9 +349,13 @@ const compile = async () => {
         }
 
         if (!config.index_html) {
-          fs.copyFileSync(path.resolve(__dirname, './libs/reactEngine/base_index.html'), path.resolve(TMP_FOLDER, './index.html'))
+          fs.copyFileSync(path.resolve(__dirname, './libs/reactEngine/base_index.html'), path.resolve(tmpFolder, './index.html'))
           
           return workDone()
+        }
+
+        if (programConfig.verbose) {
+          console.log('index.html Generation ')
         }
 
         env.render(config.index_html, templateData, (error, result) => {
@@ -351,7 +364,7 @@ const compile = async () => {
             process.exit(1)
           }
 
-          fs.writeFileSync(path.resolve(TMP_FOLDER, './index.html'), result)
+          fs.writeFileSync(path.resolve(tmpFolder, './index.html'), result)
 
           return workDone()
         })
