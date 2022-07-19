@@ -3,7 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const makeWebpackConfig = require('./webpack.config')
 
-const makeReact = (pagesData, templateData, config, constants) => new Promise(async (resolve, reject) => {
+const makeReact = (pagesData, components, templateData, config, constants) => new Promise(async (resolve, reject) => {
     if (constants.verbose) {
       console.log('Generate pagesData')
     }
@@ -18,6 +18,19 @@ const makeReact = (pagesData, templateData, config, constants) => new Promise(as
       console.log('Generate templateData')
     }
     await fs.writeFileSync(path.resolve(constants.tmp, './templateData.js'), `export default ${JSON.stringify(templateData)}`);
+
+    if (constants.verbose) {
+      console.log('Generate components')
+    }
+    await fs.writeFileSync(path.resolve(constants.tmp, './components.js'), `${components.map((compo, index) => `import Compo${index} from "${compo.path}";`).join(`
+`)}
+
+    export default [
+      ${components.map((compo, index) => `{name: Compo${index}, path: "${compo.route.replace('.js', '').toLowerCase()}"}`).join(`,
+`)}
+    ]
+
+`);
 
     if (constants.verbose) {
       console.log('Generate App.js')
@@ -39,14 +52,15 @@ const makeReact = (pagesData, templateData, config, constants) => new Promise(as
       if (constants.verbose) {
         console.log('Remove temp folder')
       }
+
       fs.rmdirSync(constants.tmp, {recursive: true})
 
-        if (err || stats.hasErrors()) {
-          return reject(err || stats.hasErrors())
-        }
+      if (err || stats.hasErrors()) {
+        return reject(err || stats.hasErrors())
+      }
 
-        resolve()
-      });
+      resolve()
+    });
 })
 
 module.exports = makeReact

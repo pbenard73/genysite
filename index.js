@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require('fs')
+const figlet = require('figlet');
 const sass = require('sass')
 const {spawn} = require('child_process')
 const path = require('path')
@@ -152,7 +153,7 @@ const compile = async () => {
         const name = config.names?.[newRootPath.replace(path.extname(pageInfo.name), '')] || pageInfo.name
         pagesPool.push({filePath: newFilePath, rootPath: newRootPath})
 
-        return {name: name.replace(path.extname(pageInfo.name), ''), brutName: pageInfo.name.replace(path.extname(pageInfo.name), ''), path: config.index === withoutExtension ? '' : newFrontPath}
+        return {name: name.replace(path.extname(pageInfo.name), ''), brutName: pageInfo.name.replace(path.extname(pageInfo.name), ''), path: config.index === withoutExtension ? '' : newFrontPath.toLowerCase()}
       }).sort((a, b) => {
         /**
          * Order the tree,
@@ -313,13 +314,16 @@ const compile = async () => {
         })
     } else {      
       const tmpFolder = path.resolve(TMP_FOLDER, `./${uuidv4()}`)
+      const componentsFolder = path.resolve(tmpFolder, `./components`)
+      
       fs.mkdirSync(tmpFolder);
+      fs.mkdirSync(componentsFolder);
 
       if (programConfig.verbose) {
         console.log('Temp folder created: ', tmpFolder)
       }
 
-      const promises = pagesPool.map(pageData => new Promise((resolve, reject) => {
+      const promises = pagesPool.filter(pageData => path.extname(pageData.rootPath) !== '.js').map(pageData => new Promise((resolve, reject) => {
         const templatePath = path.join('pages/', pageData.rootPath)
         env.render(templatePath, templateData, (error, result) => {
           if (error) {
@@ -334,10 +338,20 @@ const compile = async () => {
         })
       }))
 
+      const components = pagesPool.filter(pageData => path.extname(pageData.rootPath) === '.js').map(pageData => {
+        const tmpFilePath = path.resolve(componentsFolder, `./${pageData.rootPath}`)
+        const tmpDirName = path.dirname(tmpFilePath)
+
+        fs.mkdirSync(tmpDirName, {recursive: true})
+        fs.copyFileSync(pageData.filePath, tmpFilePath)
+
+        return {path: `./components/${pageData.rootPath}`, route: pageData.filePath.replace(PAGES_FOLDER, '').toLowerCase()}
+      })
+
       Promise.all(promises)
       .then(results => {
         const workDone = () => {
-          reactTemplateEngine(results, templateData, config, {dist: DIST_FOLDER, tmp: tmpFolder, verbose: programConfig.verbose})
+          reactTemplateEngine(results, components, templateData, config, {dist: DIST_FOLDER, tmp: tmpFolder, verbose: programConfig.verbose})
           .then(() => {
             console.log('Well done')
             process.exit(0)
@@ -503,6 +517,7 @@ const compile = async () => {
   }
 
   const run = async () => {
+    console.log(figlet.textSync('Rose Marie     La   Catin !!!'))
     parseCommand()
   }
 

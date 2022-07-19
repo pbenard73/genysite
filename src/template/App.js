@@ -1,6 +1,7 @@
 import React from 'react'
 import pageData from './pageData'
 import config from './config'
+import components from './components'
 import templateData from './templateData'
 import { useNavigate, Route, Routes } from "react-router-dom";
 
@@ -45,15 +46,28 @@ const App = () => {
                         {maketree(templateData.tree)}
                     </div>
                     <div class="col-9" style={{height:'100vh', overflow:'auto'}}>
+                        <Routes>
                         {pageData.map(page => (
-                            <Routes>
                                 <Route 
                                 key={page.path} 
-                                index={page.path === `/${config.index}`} path={page.path === `/${config.index}` ? '/' : page.path}
+                                index={page.path === `/${config.index}`}
+                                 path={page.path === `/${config.index}` ? '/' : page.path.toLowerCase()}
                                 element={<div dangerouslySetInnerHTML={{__html: page.content}} onClick={onClick} />} 
                                 />
-                            </Routes>
                         ))}
+                        {components.map(component => {
+                            const Component = component.name
+                            const compoPath = component.path
+
+                            return (
+                                <Route 
+                                key={compoPath} 
+                                path={compoPath.toLowerCase()} 
+                                element={<Component />} 
+                                />
+                            )
+                        })}
+                        </Routes>
                     </div>
                 </div>
             </div>

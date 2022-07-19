@@ -2,9 +2,9 @@ import React from 'react'
 import pageData from './pageData'
 import config from './config'
 import templateData from './templateData'
+import components from './components'
 import { useNavigate, Route, Routes } from "react-router-dom";
 
-console.log(pageData, config)
 const App = () => {
     const navigate = useNavigate()
 
@@ -20,18 +20,30 @@ const App = () => {
             return false;
         }
     }
-
     return (
     <Routes>
         {pageData.map(page => (
             <Route 
             key={page.path} 
+            path={page.path.toLowerCase()} 
             index={page.path === `/${config.index}`} path={page.path === `/${config.index}` ? '/' : page.path}
-             element={<div dangerouslySetInnerHTML={{__html: page.content}} onClick={onClick} />} 
-             />
+            element={<div dangerouslySetInnerHTML={{__html: page.content}} onClick={onClick} />} 
+            />
         ))}
-      </Routes>
-)
+        {components.map(component => {
+            const Component = component.name
+            const compoPath = component.path
+
+            return (
+                <Route 
+                key={compoPath} 
+                path={compoPath.toLowerCase()} 
+                element={<Component />} 
+                />
+            )
+        })}
+        </Routes>
+    )
     }
 
 export default App

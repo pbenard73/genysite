@@ -1,6 +1,6 @@
 {
   "name": "genysite",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "description": "Simple Static Site Generator",
   "main": "index.js",
   "scripts": {
@@ -21,6 +21,7 @@
     "babel-loader": "^8.2.5",
     "commander": "^9.0.0",
     "css-loader": "^6.7.1",
+    "figlet": "^1.5.2",
     "file-loader": "^6.2.0",
     "genysite": "^0.0.1",
     "highlight.js": "^11.4.0",
