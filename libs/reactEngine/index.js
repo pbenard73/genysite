@@ -4,10 +4,15 @@ const path = require('path')
 const makeWebpackConfig = require('./webpack.config')
 
 const makeReact = (pagesData, components, templateData, config, constants) => new Promise(async (resolve, reject) => {
+  if (constants.verbose) {
+    console.log('Generate pagesData')
+  }
+  await fs.writeFileSync(path.resolve(constants.tmp, './pageData.js'), `export default ${JSON.stringify(pagesData)}`);
+
     if (constants.verbose) {
-      console.log('Generate pagesData')
+      console.log('Generate utils.js')
     }
-    await fs.writeFileSync(path.resolve(constants.tmp, './pageData.js'), `export default ${JSON.stringify(pagesData)}`);
+    await fs.copyFileSync(path.resolve(__dirname, './utils.js'), path.resolve(constants.tmp, './utils.js'))
 
     if (constants.verbose) {
       console.log('Generate config.js')
@@ -56,6 +61,10 @@ const makeReact = (pagesData, components, templateData, config, constants) => ne
       fs.rmdirSync(constants.tmp, {recursive: true})
 
       if (err || stats.hasErrors()) {
+        if (constants.verbose) {
+          console.error(err)
+          console.error(stats)
+        }
         return reject(err || stats.hasErrors())
       }
 

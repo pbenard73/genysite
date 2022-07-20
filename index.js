@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require('fs')
+const clc = require("cli-color");
 const figlet = require('figlet');
 const sass = require('sass')
 const {spawn} = require('child_process')
@@ -32,6 +33,9 @@ let programConfig = {
 
 let config = {}
 
+/**
+ * Get Main Project configuration file (genysite.config.js)
+ */
 const getConfig = async () => {
   if (fs.existsSync(CONFIG_PATH) === false) {
     return {}
@@ -51,9 +55,18 @@ const getConfig = async () => {
   return config
 }
 
+/** ==========================================================================================
+ *                               COMPILATION ENTRY POINT
+ *  ========================================================================================*/
 const compile = async () => {
+  /**
+   * Get Main Config
+   */
   config = await getConfig()
-  const FILE_EXTENSION = config.fileExtension || '.njk'
+
+  /**
+   * Get Constants
+   */
   const HOMEPAGE = config.homepage || '';
   const DIST_FOLDER = path.resolve(ROOT, config.dist || 'docs')
 
@@ -61,14 +74,21 @@ const compile = async () => {
   const TMP_FOLDER = path.resolve(__dirname, 'tmp')
   const PAGES_FOLDER = path.resolve(SRC_FOLDER, 'pages')
   const ASSETS_FOLDER = path.resolve(SRC_FOLDER, 'assets')
+  const LIBS_FOLDER = path.resolve(SRC_FOLDER, 'libs')
   const TEMPLATE_FOLDER = path.resolve(SRC_FOLDER, 'template')
   const TEMPLATE_ASSETS_FOLDER = path.resolve(TEMPLATE_FOLDER, 'assets') 
   const TEMPLATE_CONFIG_FILE = path.resolve(TEMPLATE_FOLDER, 'config.js') 
 
+  /**
+   * Check if Temp folder exists
+   */
   if (fs.existsSync(TMP_FOLDER) === false) {
     fs.mkdirSync(TMP_FOLDER)
   }
 
+  /**
+   * Check if Template has its own config and merge it with the main project
+   */
   if (fs.existsSync(TEMPLATE_CONFIG_FILE) === true) {
     const templateConfig = require(TEMPLATE_CONFIG_FILE)
 
@@ -87,6 +107,9 @@ const compile = async () => {
     let hasTemplateFolder = true
     let hasTemplateAssets = true
 
+    /**
+     * Check SRC path
+     */
     if (fs.existsSync(SRC_FOLDER) === false){
       console.error("Source folder 'src' does not exists")
       process.exit(1)
@@ -94,6 +117,9 @@ const compile = async () => {
       console.info('Source folder: ', SRC_FOLDER)
     }
 
+    /**
+     * Check SRC/PAGES path
+     */
     if (fs.existsSync(PAGES_FOLDER) === false){
       console.error("Pages folder 'src/pages' does not exists")
       process.exit(1)
@@ -101,6 +127,9 @@ const compile = async () => {
       console.info('Page folder: ', SRC_FOLDER)
     }
 
+    /**
+     * Check SRC/ASSETS path
+     */
     if (fs.existsSync(ASSETS_FOLDER) === false){
       console.info("No assets found")
       hasAssets = false
@@ -108,6 +137,9 @@ const compile = async () => {
       console.info('Assets found : ', ASSETS_FOLDER)
     }
 
+    /**
+     * Check SRC/TEMPLATE path
+     */
     if (fs.existsSync(TEMPLATE_FOLDER) === false){
       console.info("No template was found")
       hasTemplateFolder=false
@@ -116,6 +148,9 @@ const compile = async () => {
       console.info('Template found: ', TEMPLATE_FOLDER)
     }
 
+    /**
+     * Check SRC/TEMPLATE/ASSETS path
+     */
     if (hasTemplateFolder === true && fs.existsSync(TEMPLATE_ASSETS_FOLDER) === false){
       console.info("No template's assets found")
       hasTemplateAssets=false
@@ -124,12 +159,12 @@ const compile = async () => {
     }
 
     let dirPool = []
-
     let pagesPool = []
 
-    /**
-     * Get Pages Structure Informations
-     */
+    /** ================================= GET TREE ====================================
+     *   Get Pages Structure Informations
+     *   Return the tree
+     * ==============================================================================*/
     const performPages = (filePath, rootPath = '') => {
       const priority = Array.isArray(config.priority) === true ? config.priority : null
       const pages = fs.readdirSync(filePath, {withFileTypes: true})
@@ -187,8 +222,10 @@ const compile = async () => {
 
     const tree = performPages(PAGES_FOLDER)
 
+    /** ================================= CREATE OUTPUT FILE SYSTEM ================== */
+
     /**
-     * Empty dist folder
+     * Delete the output folder if exists
      */
     if (fs.existsSync(DIST_FOLDER) === true) {
       fs.rmSync(DIST_FOLDER, {recursive: true})
@@ -197,6 +234,9 @@ const compile = async () => {
       }
     }
 
+    /**
+     * Create the output folder
+     */
     fs.mkdirSync(DIST_FOLDER)
 
     /**
@@ -206,11 +246,16 @@ const compile = async () => {
       console.log('Create Dist Folders', dirPool)
     }
 
+    /**
+     * Create the sub dist folder
+     */
     dirPool.forEach(entry => {
       const folderPath = path.join(DIST_FOLDER, entry)
 
       fs.mkdirSync(folderPath)
     })
+
+   /** ============================ COPY ASSETS AND PERFORM SASS FILES ================== */
 
     /**
      * Copy assets
@@ -266,6 +311,9 @@ const compile = async () => {
 
     performSass(path.join(DIST_FOLDER, 'assets'))
 
+
+   /** ============================ GET THE TEMPLATE DATA ================== */
+
     /**
      * Get template extra data
      */
@@ -279,9 +327,13 @@ const compile = async () => {
       console.log('Engine: ', config.react !== true ? 'Default' : 'React')
     }
 
-    /**
-     * Generate Pages
-     */
+     /** ==============================================================================
+     *                                  PAGES GENERATION 
+     *  =============================================================================*/
+    
+
+    /** ================================ TO HTML =================================== */
+
     if (config.react !== true) {
       const promises = pagesPool.map(pageData => new Promise((resolve, reject) => {
         const templatePath = path.join('pages/', pageData.rootPath)
@@ -313,8 +365,15 @@ const compile = async () => {
           process.exit(1)
         })
     } else {      
+
+    /** ================================ TO REACT =================================== */
+
+      /**
+       * Create a uniq temp folder and its components folder
+       */
       const tmpFolder = path.resolve(TMP_FOLDER, `./${uuidv4()}`)
       const componentsFolder = path.resolve(tmpFolder, `./components`)
+      const libsFolder = path.resolve(tmpFolder, `./libs`)
       
       fs.mkdirSync(tmpFolder);
       fs.mkdirSync(componentsFolder);
@@ -323,6 +382,9 @@ const compile = async () => {
         console.log('Temp folder created: ', tmpFolder)
       }
 
+      /**
+       * Perform simple pages (not components [.js])
+       */
       const promises = pagesPool.filter(pageData => path.extname(pageData.rootPath) !== '.js').map(pageData => new Promise((resolve, reject) => {
         const templatePath = path.join('pages/', pageData.rootPath)
         env.render(templatePath, templateData, (error, result) => {
@@ -338,6 +400,9 @@ const compile = async () => {
         })
       }))
 
+      /**
+       * Perform components pages (.js)
+       */      
       const components = pagesPool.filter(pageData => path.extname(pageData.rootPath) === '.js').map(pageData => {
         const tmpFilePath = path.resolve(componentsFolder, `./${pageData.rootPath}`)
         const tmpDirName = path.dirname(tmpFilePath)
@@ -348,8 +413,19 @@ const compile = async () => {
         return {path: `./components/${pageData.rootPath}`, route: pageData.filePath.replace(PAGES_FOLDER, '').toLowerCase()}
       })
 
+      /**
+       * Copy libs folder
+       */
+      if (fs.existsSync(LIBS_FOLDER)) {
+        fs.cpSync(LIBS_FOLDER, libsFolder, {recursive:true})
+      }
+
+
       Promise.all(promises)
       .then(results => {
+        /**
+         * Give the data to the react engine
+         */
         const workDone = () => {
           reactTemplateEngine(results, components, templateData, config, {dist: DIST_FOLDER, tmp: tmpFolder, verbose: programConfig.verbose})
           .then(() => {
@@ -362,16 +438,23 @@ const compile = async () => {
           })
         }
 
+        /**
+         * Copy the default index.html if not given
+         */
         if (!config.index_html) {
           fs.copyFileSync(path.resolve(__dirname, './libs/reactEngine/base_index.html'), path.resolve(tmpFolder, './index.html'))
           
           return workDone()
         }
 
-        if (programConfig.verbose) {
-          console.log('index.html Generation ')
-        }
 
+        /**
+         * Copy the given index.html after parsing it with nunjuck
+         */
+
+        if (programConfig.verbose) {
+          console.log('Generate custom index.html')
+        }
         env.render(config.index_html, templateData, (error, result) => {
           if (error) {
             console.error(error)
@@ -388,8 +471,11 @@ const compile = async () => {
         process.exit(1)
       })
     }
-
   }
+
+/** ==========================================================================================
+ *                               INSTALL TEMPLATE ENTRY POINT
+ *  ========================================================================================*/
 
   const installTemplate = async (templateUrl) => {
     const checkPackageJson = () => {
@@ -462,11 +548,19 @@ const compile = async () => {
     })
   }
 
+/** ==========================================================================================
+ *                               LIST TEMPLATES ENTRY POINT
+ *  ========================================================================================*/
+
   const listTemplates = () => {
     console.log(TEMPLATES)
 
     process.exit(0)
   }
+
+/** ==========================================================================================
+ *                               PARSE COMMAND
+ *  ========================================================================================*/
 
   const parseCommand = async () => {
     const program = new Command()
@@ -516,8 +610,13 @@ const compile = async () => {
     }
   }
 
+
+/** ==========================================================================================
+ *                                ENTRY POINT
+ *  ========================================================================================*/
+
   const run = async () => {
-    console.log(figlet.textSync('Rose Marie     La   Catin !!!'))
+    console.log(clc.magenta(figlet.textSync('Rose Marie  La  Catin !!!')))
     parseCommand()
   }
 

@@ -1,0 +1,39 @@
+html, body{
+    padding:0;
+    margin:0;
+}
+body {
+    color:red;
+
+    .intro{
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        > div {
+            position: absolute;
+            background-size:cover;
+            background-attachment:fixed;
+            background-position:center;
+            inset: 0;
+            backdrop-filter: blur(10px);
+            z-index: -1;
+            &:after{
+                content:'';
+                position: absolute;
+                backdrop-filter: blur(10px);
+                inset: 0;
+            }
+        }
+        h1{
+            font-family: "Mr De Haviland", cursive;
+            font-size: 85px;
+            font-weight: 400;
+            color: white;
+        }
+    }
+
+    .bgpink{
+        background-color: #fff0e9;
+    }
+}
