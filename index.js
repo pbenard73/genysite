@@ -12,7 +12,7 @@ const merge = require('merge-deep');
 const { v4: uuidv4 } = require('uuid');
 const createTemplateEngine = require('./libs/templateEngine')
 const reactTemplateEngine = require('./libs/reactEngine/index')
-
+const remoteTemplates = require('./remote_templates')
 const TEMPLATES_DIR = path.resolve(__dirname, 'templates')
 const TEMPLATES = fs.readdirSync(TEMPLATES_DIR)
 const ROOT = path.resolve(".")
@@ -528,6 +528,10 @@ const compile = async () => {
       return checkPackageJson()
     }
 
+    if (remoteTemplates[templateUrl] !== undefined) {
+      templateUrl = remoteTemplates[templateUrl]
+    }
+
     const clone = spawn('git', ['clone', templateUrl, TEMPLATE_FOLDER])
 
     clone.stdout.on('data', (data) => {
@@ -553,7 +557,7 @@ const compile = async () => {
  *  ========================================================================================*/
 
   const listTemplates = () => {
-    console.log(TEMPLATES)
+    console.log([...TEMPLATES, ...Object.keys(remoteTemplates)])
 
     process.exit(0)
   }
