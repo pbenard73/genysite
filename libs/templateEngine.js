@@ -49,6 +49,22 @@ const createNewEnvironment = (SRC_FOLDER,  HOMEPAGE) => {
     return joinUrl(linkPath)
   })
 
+  const performMetadata = (metadata = []) => metadata.map(meta => {
+      if (typeof meta === 'string') {
+        return meta
+      }
+      if (typeof meta === 'function') {
+        return meta()
+      }
+    }).join(`
+`);
+
+  env.addFilter('meta', function(metadata) {
+    const metaTags = performMetadata(metadata)
+    
+    return new nunjucks.runtime.SafeString(metaTags)
+  })
+
   function HighlightExtension(){
     this.tags = ['highlight']
 

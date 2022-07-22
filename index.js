@@ -2,6 +2,7 @@
 
 const fs = require('fs')
 const clc = require("cli-color");
+const nunjucks = require('nunjucks')
 const figlet = require('figlet');
 const sass = require('sass')
 const {spawn} = require('child_process')
@@ -99,6 +100,21 @@ const compile = async () => {
    * Set nunjucks environment
    */
     const env = createTemplateEngine(SRC_FOLDER, HOMEPAGE, config)
+
+
+
+  /**
+   * Run postScript
+   */
+    if (typeof config.postScript === 'function') {
+      const renderString = filePath => {
+        const content = fs.readFileSync(filePath, 'utf-8')
+
+        return new nunjucks.runtime.SafeString(env.renderString(content, config.data))
+      }
+      
+      config = await config.postScript(renderString)
+    }
 
     /**
      *  Check FileSystem
